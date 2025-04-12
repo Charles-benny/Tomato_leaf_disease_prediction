@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tomato Leaf Disease Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: url("/static/background.png") no-repeat center center fixed;
+            background-size: cover;
+            filter: brightness(0.8);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        @font-face {
+            font-family: 'Milker';
+            src: url('/static/fonts/Milker.otf') format('opentype');
+        }
+
+        .title {
+            font-family: 'Milker', sans-serif;
+            font-size: 2.5em;
+            color:  #ffffff;;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.815);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgb(255, 255, 255); }
+            to { text-shadow: 0 0 30px rgba(0, 255, 200, 0.6); }
+        }
+
+        @keyframes titleGlow {
+            from {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
+                            0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            to {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
+                            0 0 40px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        .subtitle {
+            color: #e0e0e0;
+            font-size: 1.2em;
+            padding-top: 1%;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle2 {
+            color: #00ffc8 ;
+            padding-left: 65%;
+            padding-bottom: 1%;
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size: 1.5em;
+            
+        }
+
+        .main-content {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .upload-section, .result-section {
+            flex: 1;
+            min-width: 300px;
+            min-height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-section {
+            flex: 2;
+            min-width: 400px;
+        }
+
+        .upload-container {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-file-upload:hover {
+            background: rgba(46, 204, 113, 1);
+            transform: translateY(-2px);
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(52, 152, 219, 0.8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .predict-btn:hover {
+            background: rgba(52, 152, 219, 1);
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            color: #e0e0e0;
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #file-name {
+            color: #ffffff;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .upload-section,
+            .result-section {
+                min-width: 100%;
+            }
+        }
+
+        .upload-section, .result-section {
+            animation: glowAnimation 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowAnimation {
+            from {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .confidence-meter {
+            margin-top: 10px;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg,  #27ab7448, #00ff95);
+            border-radius: 10px;
+            transition: width 0.4s ease-in-out;
+            position: relative;
+            animation: pulse 1s infinite;
+        }
+
+        .confidence-label {
+            color: #ffffff;
+            text-align: center;
+            margin-top: 5px;
+            padding-right: 100%;
+            font-size: 0.9em;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .meter-bar:hover .meter-fill {
+            box-shadow: 0 0 15px rgba(0, 255, 200, 0.5);
+        }
+        .horizontal-ticker-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .horizontal-ticker {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .ticker-content {
+            display: inline-block;
+            animation: tickerh 90s   linear infinite;
+            padding-left: 100%;
+        }
+
+        .ticker-content span {
+            display: inline-block;
+            padding: 0 50px;
+            color: #fff;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes tickerh {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        .horizontal-ticker:hover .ticker-content {
+            animation-play-state: paused;
+        }
+
+        .ticker-content span:hover {
+            color: #00ffc8;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="background-image"></div>
+        <div class="overlay"></div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">
+                <i class="fas fa-leaf"></i> 
+                Advanced Tomato Leaf Disease Predictor
+            </h1>
+            <p class="subtitle2">-- AKASH J</p>
+            <p class="subtitle">Upload a photo of your tomato plant leaf for instant disease detection</p>
+        </header>
+
+        <main class="main-content">
+            <section class="upload-section">
+                <form action="/predict" method="post" enctype="multipart/form-data">
+                    <div class="upload-container">
+                        <label class="custom-file-upload">
+                            <input type="file" name="file" hidden onchange="updateFileName(this)">
+                            Choose Image
+                        </label>
+                        <p id="file-name">No file chosen</p>
+                    </div>
+                    <button type="submit" class="predict-btn">Analyze Image</button>
+                </form>
+                <div class="horizontal-ticker-container">
+                    <div class="horizontal-ticker">
+                        <div class="ticker-content">
+                            <span>This project focuses on identifying tomato plant diseases using deep learning techniques.</span>
+                            <span>It uses a CNN model trained on an augmented dataset of tomato leaf images.</span>
+                            <span>The model classifies diseases like Early Blight, Late Blight, and Leaf Mold with high accuracy.</span>
+                            <span>The dataset includes thousands of labeled images organized into train and validation folders.</span>
+                            <span>Users can upload a tomato leaf image to get instant predictions and suggested treatments.</span>
+                            <span>This helps farmers take preventive measures and apply proper remedies early on.</span>
+                            <span>The goal is to minimize crop damage and improve tomato yield for agricultural efficiency.</span>
+                            <span>Data preprocessing includes resizing, normalization, and image augmentation techniques.</span>
+                            <span>The model is built using TensorFlow and Keras, with layers optimized for image classification.</span>
+                            <span>Accuracy and loss are tracked using training and validation metrics during model fitting.</span>
+                            <span>A user-friendly web interface is provided for uploading images and displaying predictions.</span>
+                            <span>Deployment is possible via platforms like Streamlit, Flask, or Heroku for real-time access.</span>
+                            <span>Transfer learning techniques can be used to further improve performance on small datasets.</span>
+                            <span>Confusion matrix and classification reports are used for evaluating model effectiveness.</span>
+                            <span>The system provides treatment suggestions for each identified disease.</span>
+                            <span>This solution supports sustainable farming through smart disease detection.</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            </section>
+
+            <section class="result-section">
+                {% if prediction %}
+                <div class="result-card">
+                    <div class="result-item">
+                        <div class="result-label">Disease Detected</div>
+                        <div class="result-value">{{ prediction.disease }}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Confidence Level</div>
+                        <div class="confidence-meter">
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: {{ prediction.confidence }}%"></div>
+                            </div>
+                            <div class="confidence-label">{{ prediction.confidence }}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-label">Recommended Treatment</div>
+                        <div class="result-value">{{ prediction.treatment }}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Prevention Methods</div>
+                        <div class="result-value">{{ prediction.prevention }}</div>
+                    </div>
+                    {% if image_url %}
+                    <img src="{{ image_url }}" alt="Uploaded Leaf Image" class="uploaded-image">
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="result-card">
+                    <p style="color: #e0e0e0; text-align: center;">Upload an image to see the prediction results</p>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            const fileName = input.files[0]?.name || 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        }
+    </script>
+</body>
+</html>
